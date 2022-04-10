@@ -3,9 +3,10 @@ from sklearn import preprocessing
 import pandas as pd
 from sklearn.feature_selection import mutual_info_classif, f_classif, chi2, SelectKBest, VarianceThreshold
 from ncafs import NCAFSC
-import pymrmr
-import numpy as np
+# import pymrmr
+# import numpy as np
 import time
+
 
 def getFeatureScore(features, labels, methods=[]):
 
@@ -53,17 +54,16 @@ def getFeatureScore(features, labels, methods=[]):
         scores['mutual_info'] = mutInfSelector.scores_
         print("mutual_info running time:", time.time()-s)
 
-    if (not bool(methods)) | ('mrmr' in methods):
-        # # 1-5- MRMR 
-        s = time.time()
-        df = features.copy()
-        df.insert(0, "labels", labels)
-        mrmrSelector = pymrmr.mRMR(df, 'MIQ', 10)
-        # mrmrSelector = pymrmr.mRMR(df, 'MID', features.shape[1])
-        scores['mrmr'] = []
-        # scores['mrmr'] = features.shape[1] - \
-        #     np.array([mrmrSelector.index(i) for i in features.columns])
-        print("mrmr running time:", time.time()-s)
+    # if (not bool(methods)) | ('mrmr' in methods):
+    #     # # (skipped) 1-5- MRMR
+    #     s = time.time()
+    #     df = features.copy()
+    #     df.insert(0, "labels", labels)
+    #     mrmrSelector = pymrmr.mRMR(df, 'MIQ', features.shape[1])
+    #     # mrmrSelector = pymrmr.mRMR(df, 'MID', features.shape[1])
+    #     scores['mrmr'] = features.shape[1] - \
+    #         np.array([mrmrSelector.index(i) for i in features.columns])
+    #     print("mrmr running time:", time.time()-s)
 
     if (not bool(methods)) | ('nca' in methods):
         # # 1-6- NCAFSC (heavy comp cost)

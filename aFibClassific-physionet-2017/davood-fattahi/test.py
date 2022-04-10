@@ -6,8 +6,7 @@ from sklearn import preprocessing
 from getFeatureScore import getFeatureScore
 from sklearn.feature_selection import VarianceThreshold
 
-
-
+import mifs
 
 
 GenericFeatures = pd.read_csv('GenericFeatures.csv')
@@ -25,10 +24,10 @@ labels.at[labels.className == 'O', 'classNum'] = 2
 labels.at[labels.className == '~', 'classNum'] = 3
 
 
-fscores  = getFeatureScore(features, labels, ['var_threshold','chi2_test',
-                                              'f_value', 'mutual_info', 'mrmr',
-                                              'nca', 'relieff', 'surf', 'surf*',
-                                              'multisurf', 'multisurf*' ])
+fscores = getFeatureScore(features, labels, ['var_threshold', 'chi2_test',
+                                             'f_value', 'mutual_info', 'mrmr',
+                                             'nca', 'relieff', 'surf', 'surf*',
+                                             'multisurf', 'multisurf*'])
 
 
 df = pd.read_csv('test_lung_s3.csv')

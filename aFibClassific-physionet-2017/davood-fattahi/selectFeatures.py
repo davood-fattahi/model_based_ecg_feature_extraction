@@ -11,33 +11,47 @@ import pandas as pd
 from sklearn import preprocessing
 # import skfeature
 from skrebate import ReliefF, SURF, SURFstar, MultiSURF, MultiSURFstar, TuRF
+# import mifs
+from getFeatureScore import getFeatureScore
 
 
 GenericFeatures = pd.read_csv('GenericFeatures.csv')
-SemiGenericFeatures_meanBeat = pd.read_csv('SemiGenericFeatures_meanBeat.csv')
+SemiGenericFeatures = pd.read_csv('SemiGenericFeatures_meanBeat.csv')
 DataDerivenFeatures = pd.read_csv('DataDerivenFeatures.csv')
 ModelBasedFeatures = pd.read_csv('ModelBasedFeatures.csv')
 
+
 # replace any nan with zero
 GenericFeatures = GenericFeatures.fillna(0)
-SemiGenericFeatures_meanBeat = SemiGenericFeatures_meanBeat.fillna(0)
+SemiGenericFeatures = SemiGenericFeatures.fillna(0)
 DataDerivenFeatures = DataDerivenFeatures.fillna(0)
 ModelBasedFeatures = ModelBasedFeatures.fillna(0)
 
-# concat all features
-allFeatures = pd.concat([GenericFeatures, SemiGenericFeatures_meanBeat,
-                        DataDerivenFeatures, ModelBasedFeatures], axis=1)
+
+# remove constant features
+GenericFeatures = GenericFeatures.drop(
+    GenericFeatures.columns[GenericFeatures.nunique() <= 1], axis=1)
+SemiGenericFeatures = SemiGenericFeatures.drop(
+    SemiGenericFeatures.columns[SemiGenericFeatures.nunique() <= 1], axis=1)
+DataDerivenFeatures = DataDerivenFeatures.drop(
+    DataDerivenFeatures.columns[DataDerivenFeatures.nunique() <= 1], axis=1)
+ModelBasedFeatures = ModelBasedFeatures.drop(
+    ModelBasedFeatures.columns[ModelBasedFeatures.nunique() <= 1], axis=1)
+
+# # concat all features
+# allFeatures = pd.concat([GenericFeatures, SemiGenericFeatures,
+#                         DataDerivenFeatures, ModelBasedFeatures], axis=1)
 
 # normalizing the data
 GenericFeatures[:] = preprocessing.MinMaxScaler(
 ).fit_transform(GenericFeatures)
-SemiGenericFeatures_meanBeat[:] = preprocessing.MinMaxScaler(
-).fit_transform(SemiGenericFeatures_meanBeat)
+SemiGenericFeatures[:] = preprocessing.MinMaxScaler(
+).fit_transform(SemiGenericFeatures)
 DataDerivenFeatures[:] = preprocessing.MinMaxScaler(
 ).fit_transform(DataDerivenFeatures)
 ModelBasedFeatures[:] = preprocessing.MinMaxScaler(
 ).fit_transform(ModelBasedFeatures)
-allFeatures[:] = preprocessing.MinMaxScaler().fit_transform(allFeatures)
+# allFeatures[:] = preprocessing.MinMaxScaler().fit_transform(allFeatures)
 
 
 # perpare the labels
@@ -50,8 +64,39 @@ labels.at[labels.className == 'O', 'classNum'] = 2
 labels.at[labels.className == '~', 'classNum'] = 3
 
 
+# initial selection
+GenericFeatures_scores = getFeatureScore(GenericFeatures, labels.classNum,
+                                         methods=['var_threshold', 'chi2_test', 'f_value', 'mutual_info'])
+
+
+def selectByVote(df, n):
+    a = []
+    for i in df.columns:
+        a = a+list(GenericFeatures_scores.sort_values(
+            by=i, ascending=False).index[0:n])
+    values, counts = np.unique(a, return_counts=True)
+    f = values[(-counts).argsort()][0:n]
+    return f
+
+
+f = selectByVote(GenericFeatures_scores, 100)
+
+
+a = GenericFeatures_scores.sort_values(
+    by='var_threshold', ascending=False).index[0:100]
+b = GenericFeatures_scores.sort_values(
+    by='chi2_test', ascending=False).index[0:100]
+c = GenericFeatures_scores.sort_values(
+    by='f_value', ascending=False).index[0:100]
+d = GenericFeatures_scores.sort_values(
+    by='mutual_info', ascending=False).index[0:100]
+
+e = list(a)+list(b)+list(c)+list(d)
+values, counts = np.unique(e, return_counts=True)
+f = values[(-counts).argsort()][0:100]
 # =============================================================================
 # Scenario 1: selecting among all the features
+
 
 # # 1-1- variance thresholding
 vthSelector = VarianceThreshold(threshold=.005)

@@ -17,7 +17,7 @@ def getFeatureScore(features, labels, methods=[]):
     features = features.fillna(0)
 
     # # scaling and standardizing the data
-    features_sc = preprocessing.MinMaxScaler().fit_transform(features)
+    # features_sc = preprocessing.MinMaxScaler().fit_transform(features)
     # features_st = preprocessing.StandardScaler().fit_transform(features)
 
     scores = {}

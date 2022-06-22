@@ -17,8 +17,8 @@ def getFeatureScore(features, labels, methods=[]):
     features = features.fillna(0)
 
     # # scaling and standardizing the data
-    # features = preprocessing.MinMaxScaler().fit_transform(features)
-    # features = preprocessing.StandardScaler().fit_transform(features)
+    features = pd.DataFrame(preprocessing.MinMaxScaler(
+    ).fit_transform(features), columns=features.columns)
 
     scores = {}
     if (not(bool(methods))) | ('var_threshold' in methods):
